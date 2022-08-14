@@ -61,7 +61,6 @@ class Group:
                 )
             )
             
-
     def set_statistics_team_winner(self, team_winner, score_winner, score_loser):
         score_team = self.table_scores.get(team_winner)
 
@@ -82,6 +81,20 @@ class Group:
         score_team.update(  {   "Diferencia" : score_team["A Favor"] - score_team["En Contra"]  }   )
         score_team.update(  {   "Puntos" : (score_team["Ganados"]*3) + score_team["Empates"]    })
     
+    def update_teams_tie(self,team, score1, score2):
+        score_team = self.table_scores.get(team)
+        score_team.update( {   "Empates" : score_team["Empates"] + 1      })
+        score_team.update( {   "A Favor" : score_team["A Favor"] + score1     })
+        score_team.update( {   "En Contra" : score_team["En Contra"] + score2     })
+        score_team.update( {   "Diferencia" : score_team["A Favor"] + score_team["En Contra"]     })
+        score_team.update(  {   "Puntos" : score_team["Puntos"] + score_team["Empates"]      })
+
+
+    def set_statistics_teams_tie(self, team1, score1, team2, score2):
+        self.update_teams_tie(team1,score1,score2)
+        self.update_teams_tie(team2,score1,score2)
+
+
     def generate_statistics(self,arr_match):
         team1, score1 = arr_match[0], arr_match[1]
         team2, score2 = arr_match[2], arr_match[3]
@@ -94,6 +107,7 @@ class Group:
             self.set_statistics_team_loser(team_loser, score_loser, score_winner)
 
         else:
+            self.set_statistics_teams_tie( team1, score1, team2, score2)
             print("Hay empate")
 
     def validate_constructor(self,arr_team):
