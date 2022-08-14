@@ -40,7 +40,27 @@ class Group:
             raise Exception(error)
     
     def result(self):
-        print(self.table_scores)
+        print (
+            "{:<15} {:<15} {:<15} {:<15} {:<15} {:<15} {:<15} {:<15}"
+            .format('Equipos','Ganados','Empates','Perdidos','A Favor','En Contra', 'Diferencia', 'Puntos')
+        )
+        print("-" * 120 )
+
+        for key, values in self.table_scores.items():
+            print (
+                "{:<15} {:<15} {:<15} {:<15} {:<15} {:<15} {:<15} {:<15}"
+                .format(
+                    key,
+                    values['Ganados'], 
+                    values['Empates'], 
+                    values['Perdidos'],
+                    values['A Favor'],
+                    values['En Contra'],
+                    values['Diferencia'], 
+                    values['Puntos']
+                )
+            )
+            
 
     def set_statistics_team_winner(self, team_winner, score_winner, score_loser):
         score_team = self.table_scores.get(team_winner)
@@ -144,15 +164,19 @@ class Group:
 
 
 arr_team = ["Colombia","Japon","Senegal","Polonia"]
-arr_match = ["Colombia",2,"Senegal",3]
-arr_match1 = ["Japon",2,"Senegal",3]
-
+arr_match = ["Senegal",0,"Colombia",1]
+arr_match1 = ["Japon",0,"Polonia",1]
+arr_match2 = ["Senegal",2,"Japon",2]
+arr_match3 = ["Polonia",0,"Colombia",3]
+arr_match4 = ["Polonia",1,"Senegal",2]
+arr_match5 = ["Colombia",1,"Japon",3]
 
 grupo = Group( arr_team )
 
 grupo.match(arr_match)
 grupo.match(arr_match1)
+grupo.match(arr_match2)
+grupo.match(arr_match3)
+grupo.match(arr_match4)
+grupo.match(arr_match5)
 grupo.result()
-# print(grupo.record_match)
-#print(grupo.table_scores)
-# print(grupo.teams)
