@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 
 class Group:
     record_match = []
@@ -40,6 +42,8 @@ class Group:
             raise Exception(error)
     
     def result(self):
+        self.order_result()
+
         print (
             "{:<15} {:<15} {:<15} {:<15} {:<15} {:<15} {:<15} {:<15}"
             .format('Equipos','Ganados','Empates','Perdidos','A Favor','En Contra', 'Diferencia', 'Puntos')
@@ -47,10 +51,11 @@ class Group:
         print("-" * 120 )
 
         for key, values in self.table_scores.items():
+
             print (
                 "{:<15} {:<15} {:<15} {:<15} {:<15} {:<15} {:<15} {:<15}"
                 .format(
-                    key,
+                    key[0].upper()+key[1:],
                     values['Ganados'], 
                     values['Empates'], 
                     values['Perdidos'],
@@ -60,7 +65,64 @@ class Group:
                     values['Puntos']
                 )
             )
+    
+    def order_result(self):
+
+        table_scored_auxiliar = [ 
+            [team[0], team[1]['Puntos'], int(team[1]['Diferencia']), team[1]['A Favor'] ] 
+            for team in self.table_scores.items()  
+        ]
+        table_scored_auxiliar = sorted(table_scored_auxiliar, key=lambda x:x[1], reverse=True)
+        ordered_table = []
+        
+        for team in table_scored_auxiliar:
+
+            array_aux = filter(lambda x:x[1] == team[1], table_scored_auxiliar)
+
+            if len(array_aux) == 1:
+                ordered_table.append(array_aux)
+
+            else:
+                array_aux = sorted(array_aux, key=lambda x:x[2], reverse=True)
+
+                if len(filter(lambda x:x[2] == team[2], array_aux)) != 1:
+                    array_aux = sorted(array_aux, key=lambda x:x[3], reverse=True)
+                    
+                    if len(filter(lambda x:x[3] == team[3], array_aux)) != 1:
+                        print("Ultima tanda de criterios")
+                    
+                for element in array_aux:
+                    if not(element in ordered_table):
+                        ordered_table.append(element)
             
+        print(ordered_table)
+
+        
+
+
+        #Ordenar por puntos
+        # self.table_scores = OrderedDict(sorted(self.table_scores.items(), key=lambda x:x[1]['Puntos'], reverse=True))
+        
+        # table_score_auxiliar = list(self.table_scores.items())
+
+        # array_temp = []
+        # array_position = []
+
+        # for index,team in enumerate(table_score_auxiliar):
+        #     if index != 0:
+        #         team_anterior = table_score_auxiliar[index-1]
+        #         if team_anterior[1]['Puntos'] == team[1]['Puntos']:
+        #             if not(team_anterior in array_temp):
+        #                 array_temp.append(team_anterior)
+        #             array_temp.append(team)
+
+        #         else:
+        #             array_temp
+                
+        # print(array_temp)
+        
+        
+        
     def set_statistics_team_winner(self, team_winner, score_winner, score_loser):
         score_team = self.table_scores.get(team_winner)
 
@@ -68,7 +130,7 @@ class Group:
         score_team.update(  {   "Ganados" : score_team["Ganados"] + 1   }   )
         score_team.update(  {   "A Favor" : score_team["A Favor"] + score_winner    }    )
         score_team.update(  {   "En Contra" : score_team["En Contra"] + score_loser   })
-        score_team.update(  {   "Diferencia" : score_team["A Favor"] - score_team["En Contra"]  }   )
+        score_team.update( {   "Diferencia" : self.put_sign_to_diference(score_team["A Favor"], score_team["En Contra"])    })
         score_team.update(  {   "Puntos" : (score_team["Ganados"]*3) + score_team["Empates"]    })
 
     def set_statistics_team_loser(self, team_loser, score_loser, score_winner):
@@ -78,22 +140,23 @@ class Group:
         score_team.update(  {   "Perdidos" : score_team["Perdidos"] + 1     }   )
         score_team.update(  {   "A Favor" : score_team["A Favor"] + score_loser     }   )
         score_team.update(  {   "En Contra" : score_team["En Contra"] + score_winner   })
-        score_team.update(  {   "Diferencia" : score_team["A Favor"] - score_team["En Contra"]  }   )
+        score_team.update( {   "Diferencia" : self.put_sign_to_diference(score_team["A Favor"], score_team["En Contra"])    })
         score_team.update(  {   "Puntos" : (score_team["Ganados"]*3) + score_team["Empates"]    })
     
+    def put_sign_to_diference(self, number1, number2):
+        return number1-number2 if (number1-number2)<=0 else "+" + str(number1-number2)
+
     def update_teams_tie(self,team, score1, score2):
         score_team = self.table_scores.get(team)
         score_team.update( {   "Empates" : score_team["Empates"] + 1      })
         score_team.update( {   "A Favor" : score_team["A Favor"] + score1     })
         score_team.update( {   "En Contra" : score_team["En Contra"] + score2     })
-        score_team.update( {   "Diferencia" : score_team["A Favor"] + score_team["En Contra"]     })
+        score_team.update( {   "Diferencia" : self.put_sign_to_diference(score_team["A Favor"], score_team["En Contra"])    })
         score_team.update(  {   "Puntos" : score_team["Puntos"] + score_team["Empates"]      })
-
 
     def set_statistics_teams_tie(self, team1, score1, team2, score2):
         self.update_teams_tie(team1,score1,score2)
         self.update_teams_tie(team2,score1,score2)
-
 
     def generate_statistics(self,arr_match):
         team1, score1 = arr_match[0], arr_match[1]
@@ -108,7 +171,6 @@ class Group:
 
         else:
             self.set_statistics_teams_tie( team1, score1, team2, score2)
-            print("Hay empate")
 
     def validate_constructor(self,arr_team):
         arr_team = set(arr_team)
@@ -177,20 +239,16 @@ class Group:
         return validation, error
 
 
-arr_team = ["Colombia","Japon","Senegal","Polonia"]
-arr_match = ["Senegal",0,"Colombia",1]
-arr_match1 = ["Japon",0,"Polonia",1]
-arr_match2 = ["Senegal",2,"Japon",2]
-arr_match3 = ["Polonia",0,"Colombia",3]
-arr_match4 = ["Polonia",1,"Senegal",2]
-arr_match5 = ["Colombia",1,"Japon",3]
+grupo = Group( ["Colombia","Japon","Senegal","Polonia"] )
 
-grupo = Group( arr_team )
+grupo.match(["Senegal",0,"Colombia",1])
+grupo.match(["Japon",0,"Polonia",1])
+grupo.match(["Senegal",2,"Japon",2])
+grupo.match(["Polonia",0,"Colombia",3])
+grupo.match(["Polonia",1,"Senegal",2])
+grupo.match(["Colombia",1,"Japon",3])
+# grupo.result()
+grupo.order_result()
 
-grupo.match(arr_match)
-grupo.match(arr_match1)
-grupo.match(arr_match2)
-grupo.match(arr_match3)
-grupo.match(arr_match4)
-grupo.match(arr_match5)
-grupo.result()
+
+
