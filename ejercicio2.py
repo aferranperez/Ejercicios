@@ -4,6 +4,7 @@ from collections import OrderedDict
 class Group:
     record_match = []
     table_scores = {}
+    ordered_table_scores = []
 
     def __init__(self, arr_team):
         #Constructor
@@ -50,19 +51,19 @@ class Group:
         )
         print("-" * 120 )
 
-        for key, values in self.table_scores.items():
-
+        for team in self.ordered_table_scores:
+            key = (team.keys())[0]
             print (
                 "{:<15} {:<15} {:<15} {:<15} {:<15} {:<15} {:<15} {:<15}"
                 .format(
                     key[0].upper()+key[1:],
-                    values['Ganados'], 
-                    values['Empates'], 
-                    values['Perdidos'],
-                    values['A Favor'],
-                    values['En Contra'],
-                    values['Diferencia'], 
-                    values['Puntos']
+                    team[key]['Ganados'], 
+                    team[key]['Empates'], 
+                    team[key]['Perdidos'],
+                    team[key]['A Favor'],
+                    team[key]['En Contra'],
+                    team[key]['Diferencia'], 
+                    team[key]['Puntos']
                 )
             )
     
@@ -73,16 +74,13 @@ class Group:
             for team in self.table_scores.items()  
         ]
         table_scored_auxiliar = sorted(table_scored_auxiliar, key=lambda x:x[1], reverse=True)
-        ordered_table = []
+        ordered_name_team = []
         
         for team in table_scored_auxiliar:
 
             array_aux = filter(lambda x:x[1] == team[1], table_scored_auxiliar)
 
-            if len(array_aux) == 1:
-                ordered_table.append(array_aux)
-
-            else:
+            if len(array_aux) != 1:
                 array_aux = sorted(array_aux, key=lambda x:x[2], reverse=True)
 
                 if len(filter(lambda x:x[2] == team[2], array_aux)) != 1:
@@ -91,37 +89,13 @@ class Group:
                     if len(filter(lambda x:x[3] == team[3], array_aux)) != 1:
                         print("Ultima tanda de criterios")
                     
-                for element in array_aux:
-                    if not(element in ordered_table):
-                        ordered_table.append(element)
+            for element in array_aux:
+                if not(element[0] in ordered_name_team):
+                    ordered_name_team.append(element[0])
             
-        print(ordered_table)
 
-        
-
-
-        #Ordenar por puntos
-        # self.table_scores = OrderedDict(sorted(self.table_scores.items(), key=lambda x:x[1]['Puntos'], reverse=True))
-        
-        # table_score_auxiliar = list(self.table_scores.items())
-
-        # array_temp = []
-        # array_position = []
-
-        # for index,team in enumerate(table_score_auxiliar):
-        #     if index != 0:
-        #         team_anterior = table_score_auxiliar[index-1]
-        #         if team_anterior[1]['Puntos'] == team[1]['Puntos']:
-        #             if not(team_anterior in array_temp):
-        #                 array_temp.append(team_anterior)
-        #             array_temp.append(team)
-
-        #         else:
-        #             array_temp
-                
-        # print(array_temp)
-        
-        
+        for element in ordered_name_team:
+            self.ordered_table_scores.append( {element:self.table_scores.get(element)} ) 
         
     def set_statistics_team_winner(self, team_winner, score_winner, score_loser):
         score_team = self.table_scores.get(team_winner)
@@ -247,8 +221,8 @@ grupo.match(["Senegal",2,"Japon",2])
 grupo.match(["Polonia",0,"Colombia",3])
 grupo.match(["Polonia",1,"Senegal",2])
 grupo.match(["Colombia",1,"Japon",3])
-# grupo.result()
-grupo.order_result()
+grupo.result()
+
 
 
 
